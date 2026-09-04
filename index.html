@@ -67,21 +67,64 @@ B:[
 ['Farmer Walk','3 × 30–40 s','farmer+walk+proper+form','Tronco ereto · passos firmes · core ativo'],
 ['Dead Bug','3 × 10/lado','dead+bug+exercise+proper+form','Lombar apoiada · movimento lento · respiração'],
 ['Apoio Unilateral','3 × 30 s/perna','single+leg+balance+exercise','Equilíbrio · olhar à frente · controle']]};
+
 let workout='A',current=0,timer=null,remaining=90,running=false;const done={A:{},B:{}};const $=id=>document.getElementById(id);
-function keyFor(i){return `meutreino_${workout}_${i}`} function getHistory(i){try{return JSON.parse(localStorage.getItem(keyFor(i))||'[]')}catch{return []}}
-function lastLoad(i){const h=getHistory(i);return h[0]?.load||''} function saveLoad(i,load){if(!load||load<=0)return;const h=getHistory(i),date=new Date().toLocaleDateString('pt-BR');if(!h.length||h[0].load!==Number(load)||h[0].date!==date)h.unshift({date,load:Number(load)});localStorage.setItem(keyFor(i),JSON.stringify(h.slice(0,8)))}
-function formatTime(){const m=Math.floor(remaining/60),s=remaining%60;$('clock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`} function stopTimer(){if(timer)clearInterval(timer);timer=null;running=false;$('pause').textContent='Continuar'}
+function historyKey(i){return `meutreino_history_${workout}_${i}`}
+function currentKey(i){return `meutreino_current_${workout}_${i}`}
+function getHistory(i){try{return JSON.parse(localStorage.getItem(historyKey(i))||'[]')}catch{return []}}
+function getCurrent(i){try{return localStorage.getItem(currentKey(i))||''}catch{return ''}}
+function saveCurrent(i,v){try{if(v===''){localStorage.removeItem(currentKey(i));return}localStorage.setItem(currentKey(i),String(v))}catch{}}
+function getDisplayLoad(i){const c=getCurrent(i);if(c!=='')return c;const h=getHistory(i);return h[0]?.load||''}
+function saveHistory(i,load){if(!load||load<=0)return;const h=getHistory(i),date=new Date().toLocaleDateString('pt-BR');if(!h.length||h[0].load!==Number(load)||h[0].date!==date)h.unshift({date,load:Number(load)});localStorage.setItem(historyKey(i),JSON.stringify(h.slice(0,8)))}
+function formatTime(){const m=Math.floor(remaining/60),s=remaining%60;$('clock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
+function stopTimer(){if(timer)clearInterval(timer);timer=null;running=false;$('pause').textContent='Continuar'}
 function startTimer(sec=90){stopTimer();remaining=sec;formatTime();running=true;$('pause').textContent='Pausar';$('timerMsg').textContent='Descanso em andamento.';timer=setInterval(()=>{remaining--;formatTime();if(remaining<=0){stopTimer();remaining=0;formatTime();$('timerMsg').textContent='Descanso concluído.'}},1000)}
-function render(){document.body.dataset.workout=workout;$('tabA').classList.toggle('active',workout==='A');$('tabB').classList.toggle('active',workout==='B');$('cards').innerHTML='';
-W[workout].forEach((e,i)=>{const st=done[workout][i]||[false,false,false],hist=getHistory(i),last=lastLoad(i),c=document.createElement('section');c.className='card';c.dataset.index=i;c.innerHTML=`<div class="head"><div class="num">${i+1}</div><div class="name">${e[0]}</div><div class="dose">${e[1]}</div></div><a class="button" href="${Y+e[2]}" target="_blank" rel="noopener" style="margin-top:10px">Ver demonstração</a><div class="cue"><b>Execução:</b> ${e[3]}</div><div class="sets">${st.map((x,j)=>`<button class="set ${x?'done':''}" data-i="${i}" data-j="${j}">${x?'Concluída':'Série '+(j+1)}</button>`).join('')}</div><div class="load"><input type="number" min="0" step="0.5" data-load="${i}" placeholder="Carga usada" value="${last}"><b>kg</b></div><div class="sub" style="margin-top:5px">${last?'Última carga: '+last+' kg':'Sem carga registrada.'}</div><details><summary>Histórico de cargas</summary>${hist.length?hist.map(h=>`<div class="history-item">${h.date} · ${h.load} kg</div>`).join(''):'<div class="history-item">Nenhum registro ainda.</div>'}</details>`;$('cards').appendChild(c)});
-document.querySelectorAll('.set').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.i,j=+b.dataset.j,s=done[workout][i]||[false,false,false];s[j]=!s[j];done[workout][i]=s;b.classList.toggle('done',s[j]);b.textContent=s[j]?'Concluída':'Série '+(j+1);if(s[j]){const input=document.querySelector(`[data-load="${i}"]`);saveLoad(i,Number(input.value)||0);startTimer(90)}updateProgress()}));updateProgress()}
+function render(){
+  document.body.dataset.workout=workout;$('tabA').classList.toggle('active',workout==='A');$('tabB').classList.toggle('active',workout==='B');$('cards').innerHTML='';
+  W[workout].forEach((e,i)=>{
+    const st=done[workout][i]||[false,false,false],hist=getHistory(i),saved=getDisplayLoad(i),c=document.createElement('section');
+    c.className='card';c.dataset.index=i;
+    c.innerHTML=`<div class="head"><div class="num">${i+1}</div><div class="name">${e[0]}</div><div class="dose">${e[1]}</div></div>
+    <a class="button" href="${Y+e[2]}" target="_blank" rel="noopener" style="margin-top:10px">Ver demonstração</a>
+    <div class="cue"><b>Execução:</b> ${e[3]}</div>
+    <div class="sets">${st.map((x,j)=>`<button class="set ${x?'done':''}" data-i="${i}" data-j="${j}">${x?'Concluída':'Série '+(j+1)}</button>`).join('')}</div>
+    <div class="load"><input type="number" min="0" step="0.5" data-load="${i}" placeholder="Carga usada" value="${saved}"><b>kg</b></div>
+    <div class="sub saved-msg" data-saved-msg="${i}" style="margin-top:5px">${saved?'Carga salva: '+saved+' kg':'Sem carga registrada.'}</div>
+    <details><summary>Histórico de cargas</summary>${hist.length?hist.map(h=>`<div class="history-item">${h.date} · ${h.load} kg</div>`).join(''):'<div class="history-item">Nenhum registro ainda.</div>'}</details>`;
+    $('cards').appendChild(c)
+  });
+  document.querySelectorAll('[data-load]').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const i=+inp.dataset.load, v=inp.value===''?'':Number(inp.value);
+      saveCurrent(i,v);
+      const msg=document.querySelector(`[data-saved-msg="${i}"]`);
+      if(msg) msg.textContent=v===''?'Sem carga registrada.':`Carga salva: ${v} kg`;
+    });
+    inp.addEventListener('change',()=>{
+      const i=+inp.dataset.load, v=inp.value===''?'':Number(inp.value);
+      saveCurrent(i,v);
+    });
+  });
+  document.querySelectorAll('.set').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.i,j=+b.dataset.j,s=done[workout][i]||[false,false,false];
+    s[j]=!s[j];done[workout][i]=s;b.classList.toggle('done',s[j]);b.textContent=s[j]?'Concluída':'Série '+(j+1);
+    if(s[j]){
+      const input=document.querySelector(`[data-load="${i}"]`);
+      const v=input.value===''?'':Number(input.value);
+      saveCurrent(i,v); saveHistory(i,Number(input.value)||0); startTimer(90);
+    }
+    updateProgress()
+  }));
+  updateProgress()
+}
 function updateProgress(){let ex=0,se=0;W[workout].forEach((_,i)=>{const n=(done[workout][i]||[]).filter(Boolean).length;se+=n;if(n===3)ex++});$('exProg').textContent=`${ex} de ${W[workout].length} exercícios`;$('setProg').textContent=`${se} séries`;$('bar').style.width=(ex/W[workout].length*100)+'%'}
 function go(){document.querySelector(`[data-index="${current}"]`)?.scrollIntoView({behavior:'smooth',block:'center'})}
 $('tabA').onclick=()=>{workout='A';current=0;render()};$('tabB').onclick=()=>{workout='B';current=0;render()};$('prev').onclick=()=>{current=Math.max(0,current-1);go()};$('next').onclick=()=>{current=Math.min(W[workout].length-1,current+1);go()};
 $('t60').onclick=()=>startTimer(60);$('t90').onclick=()=>startTimer(90);$('resetTimer').onclick=()=>{stopTimer();remaining=90;formatTime();$('timerMsg').textContent='Cronômetro reiniciado.'};$('pause').onclick=()=>{if(running){clearInterval(timer);timer=null;running=false;$('pause').textContent='Continuar'}else if(remaining>0){startTimer(remaining)}};
 [['sleep','sv'],['energy','ev'],['pain','pv'],['stiff','rv']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value;recovery()}));
 function recovery(){const sl=+$('sleep').value,en=+$('energy').value,pa=+$('pain').value,st=+$('stiff').value;let m='Condição adequada para manter o treino planejado.';if(pa>=4)m='Dor articular elevada: reduza carga/amplitude e não force o movimento doloroso.';else if(sl<=5||en<=5||st>=6)m='Recuperação abaixo do ideal: mantenha as cargas ou reduza o volume hoje.';$('status').textContent=m}
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}formatTime();render();recovery();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}
+formatTime();render();recovery();
 </script>
 </body>
 </html>

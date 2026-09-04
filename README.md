@@ -1,38 +1,29 @@
-# Meu Treino — PWA para GitHub Pages
+# Meu Treino — PWA v2
 
-## Como publicar
-1. Crie uma conta/repositório no GitHub.
-2. Crie um repositório chamado `meu-treino`.
-3. Envie para a raiz:
-   - index.html
-   - manifest.webmanifest
-   - service-worker.js
-   - icon-192.png
-   - icon-512.png
-4. Vá em Settings > Pages.
-5. Em Build and deployment:
-   - Source: Deploy from a branch
-   - Branch: main
-   - Folder: / (root)
-6. Salve.
+## Correção principal
+A carga agora é salva imediatamente enquanto você digita. Não é mais necessário marcar uma série como concluída para a carga permanecer registrada.
 
-O endereço ficará parecido com:
-https://SEU-USUARIO.github.io/meu-treino/
+O histórico é gravado quando uma série é concluída.
 
-## Instalar no iPhone
-1. Abra o endereço no Safari.
-2. Toque em Compartilhar.
-3. Toque em “Adicionar à Tela de Início”.
-4. Toque em “Adicionar”.
+## Atualizar uma instalação existente no GitHub Pages
+Substitua no repositório os arquivos:
+- index.html
+- service-worker.js
+- manifest.webmanifest
+- icon-192.png
+- icon-512.png
 
-## Recursos
-- Treino A e B.
-- Links para demonstração dos exercícios.
-- Registro da carga.
-- Histórico das últimas cargas por exercício.
-- Cronômetro automático de 90 s ao concluir uma série.
-- Opções de 60 s e 90 s.
-- Check-in de sono, energia, dor articular e rigidez.
-- Funciona como PWA e mantém a interface principal em cache após a primeira abertura.
+Depois faça Commit changes.
 
-Observação: os links de demonstração precisam de internet.
+No iPhone:
+1. Abra o endereço do app no Safari.
+2. Atualize a página.
+3. Feche o app instalado e abra novamente.
+4. Teste digitando uma carga, feche o app e reabra.
+5. Se ainda carregar a versão antiga, remova o ícone da Tela de Início e adicione novamente pelo Safari.
+
+## Publicação nova
+Settings > Pages > Deploy from a branch > main > /(root).
+
+## Instalação no iPhone
+Safari > Compartilhar > Adicionar à Tela de Início.
