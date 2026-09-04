@@ -1,29 +1,32 @@
-# Meu Treino — PWA v2
+# Meu Treino — PWA v3
 
-## Correção principal
-A carga agora é salva imediatamente enquanto você digita. Não é mais necessário marcar uma série como concluída para a carga permanecer registrada.
+## Correção do salvamento
+Nesta versão:
+- a carga é salva ao digitar;
+- é salva novamente ao sair do campo;
+- existe botão explícito `Salvar carga`;
+- aparece confirmação `Salvo no aparelho`;
+- aceita vírgula ou ponto em cargas decimais;
+- o histórico é registrado ao concluir uma série;
+- cache atualizado para v3.
 
-O histórico é gravado quando uma série é concluída.
-
-## Atualizar uma instalação existente no GitHub Pages
-Substitua no repositório os arquivos:
+## Atualizar no GitHub
+No repositório, substitua:
 - index.html
 - service-worker.js
 - manifest.webmanifest
-- icon-192.png
-- icon-512.png
 
-Depois faça Commit changes.
+Faça Commit changes.
 
-No iPhone:
-1. Abra o endereço do app no Safari.
-2. Atualize a página.
-3. Feche o app instalado e abra novamente.
-4. Teste digitando uma carga, feche o app e reabra.
-5. Se ainda carregar a versão antiga, remova o ícone da Tela de Início e adicione novamente pelo Safari.
+## IMPORTANTE no iPhone
+Para garantir que não está abrindo a versão antiga:
+1. Abra a URL do GitHub Pages no Safari.
+2. Confira se aparece a faixa `Versão 3 — salvamento reforçado`.
+3. Se não aparecer, recarregue a página.
+4. Remova o ícone antigo `Meu Treino` da Tela de Início.
+5. No Safari, abra novamente a URL e use Compartilhar > Adicionar à Tela de Início.
+6. Digite uma carga e toque em `Salvar carga`.
+7. Confirme que aparece `Salvo no aparelho: XX kg`.
+8. Feche o app completamente e abra novamente.
 
-## Publicação nova
-Settings > Pages > Deploy from a branch > main > /(root).
-
-## Instalação no iPhone
-Safari > Compartilhar > Adicionar à Tela de Início.
+Não use navegação privada do Safari para o app.
