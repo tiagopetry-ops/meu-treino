@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#174f82">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meu Treino">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Meu Treino</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;--border:#dfe3e8;--blue:#174f82;--green:#17623e;--soft:#eef4f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.app{max-width:760px;margin:auto;padding:14px 14px 32px}h1{margin:0;font-size:26px}.sub{color:var(--muted);font-size:13px}
+.tabs,.nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+button,a.button{min-height:46px;border-radius:12px;border:1px solid var(--border);background:var(--card);font-weight:800;color:var(--text);font-size:15px;text-decoration:none;display:flex;align-items:center;justify-content:center;padding:0 12px}
+button.active{background:#eaf1f7;border-color:var(--blue)}.meta div{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;font-size:11px}.meta b{display:block;font-size:13px}
+.timer,.card,.rec{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px}.timer{margin:12px 0}.timer-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.clock{font-size:30px;font-weight:900}.timer-actions{display:flex;gap:6px;flex-wrap:wrap}.timer-actions button{min-height:40px;font-size:13px}
+.progress-row{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-top:10px}.bar{height:9px;background:var(--border);border-radius:999px;overflow:hidden;margin:7px 0 12px}.bar span{display:block;height:100%;background:var(--blue);width:0}
+.card{margin:10px 0}.head{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:9px;align-items:center}.num{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;color:#fff;background:var(--blue);font-weight:900}body[data-workout="B"] .num{background:var(--green)}
+.name{font-weight:900}.dose{font-weight:900;font-size:14px;white-space:nowrap}.cue{background:var(--soft);border-radius:10px;padding:9px 10px;color:var(--muted);font-size:13px;margin:8px 0}.cue b{color:var(--text)}
+.sets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.set.done{background:#eaf1f7;border-color:var(--blue)}.load{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center;margin-top:8px}
+input[type=number]{min-height:44px;width:100%;border:1px solid var(--border);border-radius:10px;padding:0 11px;font-size:16px}.history-item{font-size:12px;color:var(--muted);padding:2px 0}
+.recovery{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rec label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.status{margin-top:9px;background:#eef7f1;border-radius:10px;padding:10px;font-size:13px;font-weight:800}
+footer{margin-top:20px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:480px){.meta{grid-template-columns:1fr 1fr}.head{grid-template-columns:38px minmax(0,1fr)}.dose{grid-column:2}.recovery{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-workout="A">
+<div class="app">
+<h1>Meu Treino</h1><div class="sub">Quarta: Treino A · Sexta: Treino B</div>
+<div class="tabs"><button id="tabA" class="active">Treino A</button><button id="tabB">Treino B</button></div>
+<div class="meta"><div><b>~60 min</b>duração</div><div><b>3 séries</b>por exercício</div><div><b>RPE 6–8</b>sem falha</div><div><b>60–90 s</b>descanso</div></div>
+<div class="timer"><div class="timer-top"><div><div class="sub">DESCANSO</div><div id="clock" class="clock">01:30</div></div><div class="timer-actions"><button id="t60">60 s</button><button id="t90">90 s</button><button id="pause">Pausar</button><button id="resetTimer">Reiniciar</button></div></div><div id="timerMsg" class="sub">Inicia automaticamente ao concluir uma série.</div></div>
+<div class="progress-row"><span id="exProg">0 de 11 exercícios</span><span id="setProg">0 séries</span></div><div class="bar"><span id="bar"></span></div>
+<main id="cards"></main>
+<div class="nav"><button id="prev">Anterior</button><button id="next">Próximo exercício</button></div>
+<h2>Recuperação rápida</h2>
+<div class="recovery"><div class="rec"><label>Sono: <span id="sv">8</span>/10</label><input id="sleep" type="range" min="0" max="10" value="8"></div><div class="rec"><label>Energia: <span id="ev">8</span>/10</label><input id="energy" type="range" min="0" max="10" value="8"></div><div class="rec"><label>Dor articular: <span id="pv">0</span>/10</label><input id="pain" type="range" min="0" max="10" value="0"></div><div class="rec"><label>Rigidez: <span id="rv">1</span>/10</label><input id="stiff" type="range" min="0" max="10" value="1"></div></div>
+<div id="status" class="status">Condição adequada para manter o treino planejado.</div>
+<footer>As cargas e o histórico ficam salvos neste aparelho.</footer>
+</div>
+<script>
+const Y='https://www.youtube.com/results?search_query=';
+const W={A:[
+['Trap Bar Deadlift','3 × 8','trap+bar+deadlift+proper+form','Coluna neutra · empurre o chão · descida controlada'],
+['Goblet Box Squat','3 × 10–12','goblet+box+squat+proper+form','Banco limita amplitude · joelhos alinhados · sem dor'],
+['Mesa Flexora','3 × 12','lying+leg+curl+proper+form','Quadril apoiado · contração no final · volta lenta'],
+['Remada Apoiada','3 × 10','chest+supported+row+proper+form','Peito apoiado · puxe com as costas · ombros baixos'],
+['Supino Inclinado com Halteres','3 × 10','incline+dumbbell+press+proper+form','Escápulas apoiadas · cotovelos ~45° · sem dor'],
+['Landmine Press','3 × 10/lado','landmine+press+proper+form','Core ativo · tronco estável · trajetória diagonal'],
+['Face Pull','3 × 15','face+pull+proper+form','Puxe ao rosto · cotovelos altos · movimento lento'],
+['Panturrilha Sentado','3 × 15','seated+calf+raise+proper+form','Amplitude completa · pausa no topo · descida lenta'],
+['Panturrilha em Pé','3 × 12','standing+calf+raise+proper+form','Equilíbrio · pausa no topo · amplitude completa'],
+['Pallof Press','3 × 12/lado','pallof+press+proper+form','Não deixe o tronco girar · core firme · controle'],
+['Prancha','3 × 30–45 s','forearm+plank+proper+form','Corpo alinhado · core ativo · respiração normal']],
+B:[
+['Step-Up Baixo','3 × 10/perna','low+step+up+proper+form','Suba controlado · joelho alinhado · sem impulso'],
+['Passada / Afundo','3 × 10/perna','dumbbell+lunge+proper+form','Passo estável · tronco ereto · descida controlada'],
+['RDL Unilateral','3 × 8/perna','single+leg+romanian+deadlift+proper+form','Quadril estável · coluna neutra · equilíbrio'],
+['Remada Baixa na Polia','3 × 10–12','seated+cable+row+proper+form','Tronco ereto · puxe com as costas · lombar neutra'],
+['Puxada Alta — Pegada Neutra','3 × 10–12','neutral+grip+lat+pulldown+proper+form','Tronco estável · puxe ao peito · retorno controlado'],
+['Elevação Lateral — Scaption','3 × 12','scaption+dumbbell+raise+proper+form','Plano da escápula · carga leve · sem dor'],
+['Rotação Externa','3 × 12/lado','band+external+rotation+shoulder+proper+form','Cotovelo junto ao corpo · movimento lento'],
+['Panturrilha Unilateral','3 × 12–15/perna','single+leg+calf+raise+proper+form','Amplitude completa · descida lenta · controle'],
+['Farmer Walk','3 × 30–40 s','farmer+walk+proper+form','Tronco ereto · passos firmes · core ativo'],
+['Dead Bug','3 × 10/lado','dead+bug+exercise+proper+form','Lombar apoiada · movimento lento · respiração'],
+['Apoio Unilateral','3 × 30 s/perna','single+leg+balance+exercise','Equilíbrio · olhar à frente · controle']]};
+let workout='A',current=0,timer=null,remaining=90,running=false;const done={A:{},B:{}};const $=id=>document.getElementById(id);
+function keyFor(i){return `meutreino_${workout}_${i}`} function getHistory(i){try{return JSON.parse(localStorage.getItem(keyFor(i))||'[]')}catch{return []}}
+function lastLoad(i){const h=getHistory(i);return h[0]?.load||''} function saveLoad(i,load){if(!load||load<=0)return;const h=getHistory(i),date=new Date().toLocaleDateString('pt-BR');if(!h.length||h[0].load!==Number(load)||h[0].date!==date)h.unshift({date,load:Number(load)});localStorage.setItem(keyFor(i),JSON.stringify(h.slice(0,8)))}
+function formatTime(){const m=Math.floor(remaining/60),s=remaining%60;$('clock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`} function stopTimer(){if(timer)clearInterval(timer);timer=null;running=false;$('pause').textContent='Continuar'}
+function startTimer(sec=90){stopTimer();remaining=sec;formatTime();running=true;$('pause').textContent='Pausar';$('timerMsg').textContent='Descanso em andamento.';timer=setInterval(()=>{remaining--;formatTime();if(remaining<=0){stopTimer();remaining=0;formatTime();$('timerMsg').textContent='Descanso concluído.'}},1000)}
+function render(){document.body.dataset.workout=workout;$('tabA').classList.toggle('active',workout==='A');$('tabB').classList.toggle('active',workout==='B');$('cards').innerHTML='';
+W[workout].forEach((e,i)=>{const st=done[workout][i]||[false,false,false],hist=getHistory(i),last=lastLoad(i),c=document.createElement('section');c.className='card';c.dataset.index=i;c.innerHTML=`<div class="head"><div class="num">${i+1}</div><div class="name">${e[0]}</div><div class="dose">${e[1]}</div></div><a class="button" href="${Y+e[2]}" target="_blank" rel="noopener" style="margin-top:10px">Ver demonstração</a><div class="cue"><b>Execução:</b> ${e[3]}</div><div class="sets">${st.map((x,j)=>`<button class="set ${x?'done':''}" data-i="${i}" data-j="${j}">${x?'Concluída':'Série '+(j+1)}</button>`).join('')}</div><div class="load"><input type="number" min="0" step="0.5" data-load="${i}" placeholder="Carga usada" value="${last}"><b>kg</b></div><div class="sub" style="margin-top:5px">${last?'Última carga: '+last+' kg':'Sem carga registrada.'}</div><details><summary>Histórico de cargas</summary>${hist.length?hist.map(h=>`<div class="history-item">${h.date} · ${h.load} kg</div>`).join(''):'<div class="history-item">Nenhum registro ainda.</div>'}</details>`;$('cards').appendChild(c)});
+document.querySelectorAll('.set').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.i,j=+b.dataset.j,s=done[workout][i]||[false,false,false];s[j]=!s[j];done[workout][i]=s;b.classList.toggle('done',s[j]);b.textContent=s[j]?'Concluída':'Série '+(j+1);if(s[j]){const input=document.querySelector(`[data-load="${i}"]`);saveLoad(i,Number(input.value)||0);startTimer(90)}updateProgress()}));updateProgress()}
+function updateProgress(){let ex=0,se=0;W[workout].forEach((_,i)=>{const n=(done[workout][i]||[]).filter(Boolean).length;se+=n;if(n===3)ex++});$('exProg').textContent=`${ex} de ${W[workout].length} exercícios`;$('setProg').textContent=`${se} séries`;$('bar').style.width=(ex/W[workout].length*100)+'%'}
+function go(){document.querySelector(`[data-index="${current}"]`)?.scrollIntoView({behavior:'smooth',block:'center'})}
+$('tabA').onclick=()=>{workout='A';current=0;render()};$('tabB').onclick=()=>{workout='B';current=0;render()};$('prev').onclick=()=>{current=Math.max(0,current-1);go()};$('next').onclick=()=>{current=Math.min(W[workout].length-1,current+1);go()};
+$('t60').onclick=()=>startTimer(60);$('t90').onclick=()=>startTimer(90);$('resetTimer').onclick=()=>{stopTimer();remaining=90;formatTime();$('timerMsg').textContent='Cronômetro reiniciado.'};$('pause').onclick=()=>{if(running){clearInterval(timer);timer=null;running=false;$('pause').textContent='Continuar'}else if(remaining>0){startTimer(remaining)}};
+[['sleep','sv'],['energy','ev'],['pain','pv'],['stiff','rv']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value;recovery()}));
+function recovery(){const sl=+$('sleep').value,en=+$('energy').value,pa=+$('pain').value,st=+$('stiff').value;let m='Condição adequada para manter o treino planejado.';if(pa>=4)m='Dor articular elevada: reduza carga/amplitude e não force o movimento doloroso.';else if(sl<=5||en<=5||st>=6)m='Recuperação abaixo do ideal: mantenha as cargas ou reduza o volume hoje.';$('status').textContent=m}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}formatTime();render();recovery();
+</script>
+</body>
+</html>
