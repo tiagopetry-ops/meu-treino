@@ -1,132 +1,25 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#174f82">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Meu Treino">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icon-192.png">
-<title>Meu Treino</title>
-<style>
-:root{--bg:#f4f6f8;--card:#fff;--text:#17202a;--muted:#667085;--border:#dfe3e8;--blue:#174f82;--green:#17623e;--soft:#eef4f8}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-.app{max-width:760px;margin:auto;padding:14px 14px 32px}h1{margin:0;font-size:26px}.sub{color:var(--muted);font-size:13px}
-.tabs,.nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-button,a.button{min-height:46px;border-radius:12px;border:1px solid var(--border);background:var(--card);font-weight:800;color:var(--text);font-size:15px;text-decoration:none;display:flex;align-items:center;justify-content:center;padding:0 12px}
-button.active{background:#eaf1f7;border-color:var(--blue)}.meta div{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px;text-align:center;font-size:11px}.meta b{display:block;font-size:13px}
-.timer,.card,.rec{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px}.timer{margin:12px 0}.timer-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.clock{font-size:30px;font-weight:900}.timer-actions{display:flex;gap:6px;flex-wrap:wrap}.timer-actions button{min-height:40px;font-size:13px}
-.progress-row{display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-top:10px}.bar{height:9px;background:var(--border);border-radius:999px;overflow:hidden;margin:7px 0 12px}.bar span{display:block;height:100%;background:var(--blue);width:0}
-.card{margin:10px 0}.head{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:9px;align-items:center}.num{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;color:#fff;background:var(--blue);font-weight:900}body[data-workout="B"] .num{background:var(--green)}
-.name{font-weight:900}.dose{font-weight:900;font-size:14px;white-space:nowrap}.cue{background:var(--soft);border-radius:10px;padding:9px 10px;color:var(--muted);font-size:13px;margin:8px 0}.cue b{color:var(--text)}
-.sets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.set.done{background:#eaf1f7;border-color:var(--blue)}
-.loadrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:7px;align-items:center;margin-top:8px}
-input[type=text]{min-height:44px;width:100%;border:1px solid var(--border);border-radius:10px;padding:0 11px;font-size:16px}
-.savebtn{min-height:44px;background:#eef7f1;border-color:#b8d7c3}.saved{font-size:12px;color:#17623e;font-weight:800;margin-top:5px}.history-item{font-size:12px;color:var(--muted);padding:2px 0}
-.recovery{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rec label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.status{margin-top:9px;background:#eef7f1;border-radius:10px;padding:10px;font-size:13px;font-weight:800}
-.version{margin:6px 0 12px;padding:8px 10px;border-radius:10px;background:#fff7e6;border:1px solid #f0d9a8;font-size:12px;font-weight:800}
-footer{margin-top:20px;text-align:center;color:var(--muted);font-size:12px}
-@media(max-width:480px){.meta{grid-template-columns:1fr 1fr}.head{grid-template-columns:38px minmax(0,1fr)}.dose{grid-column:2}.recovery{grid-template-columns:1fr}.loadrow{grid-template-columns:1fr auto}.loadrow strong{grid-column:2}.savebtn{grid-column:1 / -1}}
-</style>
-</head>
-<body data-workout="A">
-<div class="app">
-<h1>Meu Treino</h1><div class="sub">Quarta: Treino A · Sexta: Treino B</div>
-<div class="version">Versão 3 — salvamento reforçado</div>
-<div class="tabs"><button id="tabA" class="active">Treino A</button><button id="tabB">Treino B</button></div>
-<div class="meta"><div><b>~60 min</b>duração</div><div><b>3 séries</b>por exercício</div><div><b>RPE 6–8</b>sem falha</div><div><b>60–90 s</b>descanso</div></div>
-<div class="timer"><div class="timer-top"><div><div class="sub">DESCANSO</div><div id="clock" class="clock">01:30</div></div><div class="timer-actions"><button id="t60">60 s</button><button id="t90">90 s</button><button id="pause">Pausar</button><button id="resetTimer">Reiniciar</button></div></div><div id="timerMsg" class="sub">Inicia automaticamente ao concluir uma série.</div></div>
-<div class="progress-row"><span id="exProg">0 de 11 exercícios</span><span id="setProg">0 séries</span></div><div class="bar"><span id="bar"></span></div>
-<main id="cards"></main>
-<div class="nav"><button id="prev">Anterior</button><button id="next">Próximo exercício</button></div>
-
-<h2>Recuperação rápida</h2>
-<div class="recovery"><div class="rec"><label>Sono: <span id="sv">8</span>/10</label><input id="sleep" type="range" min="0" max="10" value="8"></div><div class="rec"><label>Energia: <span id="ev">8</span>/10</label><input id="energy" type="range" min="0" max="10" value="8"></div><div class="rec"><label>Dor articular: <span id="pv">0</span>/10</label><input id="pain" type="range" min="0" max="10" value="0"></div><div class="rec"><label>Rigidez: <span id="rv">1</span>/10</label><input id="stiff" type="range" min="0" max="10" value="1"></div></div>
-<div id="status" class="status">Condição adequada para manter o treino planejado.</div>
-<footer>As cargas são salvas no aparelho e entram no histórico ao concluir a série.</footer>
-</div>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#173f63"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-192.png"><title>Meu Treino</title>
+<style>:root{--b:#173f63;--g:#1e6645;--bg:#f3f5f7;--l:#e1e5e9;--m:#667085}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#15202b}.app{max-width:760px;margin:auto;padding:14px 14px 85px}h1{margin:0}.muted{color:var(--m);font-size:13px}.card{background:#fff;border:1px solid var(--l);border-radius:16px;padding:14px;margin:12px 0}.badge{float:right;background:#e9f3ec;color:var(--g);padding:6px 10px;border-radius:99px;font-weight:800}.tabs,.sets,.actions{display:grid;gap:7px}.tabs{grid-template-columns:repeat(4,1fr);position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--l);padding:7px;z-index:5}.sets{grid-template-columns:repeat(3,1fr)}.actions{grid-template-columns:1fr 1fr}button,a.btn{min-height:45px;border:1px solid var(--l);background:#fff;border-radius:11px;font-weight:800;padding:8px;text-decoration:none;color:#15202b;display:flex;align-items:center;justify-content:center}.primary{background:var(--b);color:#fff}.done{background:#e8f1f7}.view{display:none}.view.active{display:block}.ex{font-weight:900;font-size:17px}.cue{background:#edf3f7;padding:9px;border-radius:10px;color:var(--m);font-size:13px;margin:8px 0}.load{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:8px}.load input{min-height:44px;border:1px solid var(--l);border-radius:10px;padding:0 10px;font-size:16px}.saved{color:var(--g);font-size:12px;font-weight:800;margin-top:5px}.progress{height:9px;background:#ddd;border-radius:9px;overflow:hidden}.progress span{display:block;height:100%;background:var(--b)}.clock{font-size:30px;font-weight:900}.hist{padding:9px 0;border-bottom:1px solid var(--l)}.check{display:grid;grid-template-columns:1fr 1fr;gap:9px}.check input{width:100%}@media(max-width:480px){.tabs button{font-size:11px}.check{grid-template-columns:1fr}}</style></head>
+<body><div class="app"><span class="badge">v4</span><h1>Meu Treino</h1><div class="muted" id="date"></div>
+<section id="today" class="view active"><div class="card"><div class="muted">TREINO DE HOJE</div><h2 id="suggest"></h2><div id="desc" class="muted"></div><div class="actions" style="margin-top:12px"><button class="primary" id="start">Iniciar / continuar</button><button id="swap">Trocar treino</button></div></div>
+<div class="card"><b>Check-in de recuperação</b><div class="check"><label>Sono <span id="sv">8</span>/10<input id="sleep" type="range" min="0" max="10" value="8"></label><label>Energia <span id="ev">8</span>/10<input id="energy" type="range" min="0" max="10" value="8"></label><label>Dor articular <span id="pv">0</span>/10<input id="pain" type="range" min="0" max="10" value="0"></label><label>Rigidez <span id="rv">1</span>/10<input id="stiff" type="range" min="0" max="10" value="1"></label></div><div class="cue" id="advice">Condição adequada para o treino planejado.</div></div></section>
+<section id="workout" class="view"><h2 id="wt"></h2><div class="muted" id="prog"></div><div class="progress"><span id="bar" style="width:0"></span></div><div class="card"><div class="muted">DESCANSO</div><div class="clock" id="clock">01:30</div><div class="actions"><button onclick="startTimer(60)">60 s</button><button onclick="startTimer(90)">90 s</button></div></div><div id="cards"></div><button class="primary" id="finish" style="width:100%">Concluir treino</button></section>
+<section id="history" class="view"><h2>Histórico</h2><div id="hist" class="card"></div></section>
+<section id="evolution" class="view"><h2>Evolução</h2><div class="muted">Últimas cargas registradas.</div><div id="evo"></div></section></div>
+<nav class="tabs"><button data-v="today">Hoje</button><button data-v="workout">Treino</button><button data-v="history">Histórico</button><button data-v="evolution">Evolução</button></nav>
 <script>
-const Y='https://www.youtube.com/results?search_query=';
-const W={A:[
-['Trap Bar Deadlift','3 × 8','trap+bar+deadlift+proper+form','Coluna neutra · empurre o chão · descida controlada'],
-['Goblet Box Squat','3 × 10–12','goblet+box+squat+proper+form','Banco limita amplitude · joelhos alinhados · sem dor'],
-['Mesa Flexora','3 × 12','lying+leg+curl+proper+form','Quadril apoiado · contração no final · volta lenta'],
-['Remada Apoiada','3 × 10','chest+supported+row+proper+form','Peito apoiado · puxe com as costas · ombros baixos'],
-['Supino Inclinado com Halteres','3 × 10','incline+dumbbell+press+proper+form','Escápulas apoiadas · cotovelos ~45° · sem dor'],
-['Landmine Press','3 × 10/lado','landmine+press+proper+form','Core ativo · tronco estável · trajetória diagonal'],
-['Face Pull','3 × 15','face+pull+proper+form','Puxe ao rosto · cotovelos altos · movimento lento'],
-['Panturrilha Sentado','3 × 15','seated+calf+raise+proper+form','Amplitude completa · pausa no topo · descida lenta'],
-['Panturrilha em Pé','3 × 12','standing+calf+raise+proper+form','Equilíbrio · pausa no topo · amplitude completa'],
-['Pallof Press','3 × 12/lado','pallof+press+proper+form','Não deixe o tronco girar · core firme · controle'],
-['Prancha','3 × 30–45 s','forearm+plank+proper+form','Corpo alinhado · core ativo · respiração normal']],
-B:[
-['Step-Up Baixo','3 × 10/perna','low+step+up+proper+form','Suba controlado · joelho alinhado · sem impulso'],
-['Passada / Afundo','3 × 10/perna','dumbbell+lunge+proper+form','Passo estável · tronco ereto · descida controlada'],
-['RDL Unilateral','3 × 8/perna','single+leg+romanian+deadlift+proper+form','Quadril estável · coluna neutra · equilíbrio'],
-['Remada Baixa na Polia','3 × 10–12','seated+cable+row+proper+form','Tronco ereto · puxe com as costas · lombar neutra'],
-['Puxada Alta — Pegada Neutra','3 × 10–12','neutral+grip+lat+pulldown+proper+form','Tronco estável · puxe ao peito · retorno controlado'],
-['Elevação Lateral — Scaption','3 × 12','scaption+dumbbell+raise+proper+form','Plano da escápula · carga leve · sem dor'],
-['Rotação Externa','3 × 12/lado','band+external+rotation+shoulder+proper+form','Cotovelo junto ao corpo · movimento lento'],
-['Panturrilha Unilateral','3 × 12–15/perna','single+leg+calf+raise+proper+form','Amplitude completa · descida lenta · controle'],
-['Farmer Walk','3 × 30–40 s','farmer+walk+proper+form','Tronco ereto · passos firmes · core ativo'],
-['Dead Bug','3 × 10/lado','dead+bug+exercise+proper+form','Lombar apoiada · movimento lento · respiração'],
-['Apoio Unilateral','3 × 30 s/perna','single+leg+balance+exercise','Equilíbrio · olhar à frente · controle']]};
-
-let workout='A',current=0,timer=null,remaining=90,running=false;const done={A:{},B:{}};const $=id=>document.getElementById(id);
-
-function loadKey(i){return `mt_load_${workout}_${i}`}
-function histKey(i){return `mt_hist_${workout}_${i}`}
-function parseLoad(v){if(v===null||v===undefined)return '';v=String(v).trim().replace(',','.');if(v==='')return '';const n=Number(v);return Number.isFinite(n)&&n>=0?n:''}
-function getLoad(i){try{return localStorage.getItem(loadKey(i))||''}catch{return ''}}
-function setLoad(i,v){const n=parseLoad(v);try{if(n==='')localStorage.removeItem(loadKey(i));else localStorage.setItem(loadKey(i),String(n));}catch{};return n}
-function getHist(i){try{return JSON.parse(localStorage.getItem(histKey(i))||'[]')}catch{return []}}
-function saveHist(i,v){const n=parseLoad(v);if(n===''||n<=0)return;const h=getHist(i),date=new Date().toLocaleDateString('pt-BR');if(!h.length||h[0].load!==n||h[0].date!==date)h.unshift({date,load:n});try{localStorage.setItem(histKey(i),JSON.stringify(h.slice(0,8)))}catch{}}
-
-function formatTime(){const m=Math.floor(remaining/60),s=remaining%60;$('clock').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}
-function stopTimer(){if(timer)clearInterval(timer);timer=null;running=false;$('pause').textContent='Continuar'}
-function startTimer(sec=90){stopTimer();remaining=sec;formatTime();running=true;$('pause').textContent='Pausar';$('timerMsg').textContent='Descanso em andamento.';timer=setInterval(()=>{remaining--;formatTime();if(remaining<=0){stopTimer();remaining=0;formatTime();$('timerMsg').textContent='Descanso concluído.'}},1000)}
-
-function render(){
- document.body.dataset.workout=workout;$('tabA').classList.toggle('active',workout==='A');$('tabB').classList.toggle('active',workout==='B');$('cards').innerHTML='';
- W[workout].forEach((e,i)=>{
-  const st=done[workout][i]||[false,false,false],saved=getLoad(i),hist=getHist(i),c=document.createElement('section');
-  c.className='card';c.dataset.index=i;
-  c.innerHTML=`<div class="head"><div class="num">${i+1}</div><div class="name">${e[0]}</div><div class="dose">${e[1]}</div></div>
-  <a class="button" href="${Y+e[2]}" target="_blank" rel="noopener" style="margin-top:10px">Ver demonstração</a>
-  <div class="cue"><b>Execução:</b> ${e[3]}</div>
-  <div class="sets">${st.map((x,j)=>`<button class="set ${x?'done':''}" data-i="${i}" data-j="${j}">${x?'Concluída':'Série '+(j+1)}</button>`).join('')}</div>
-  <div class="loadrow"><input type="text" inputmode="decimal" data-load="${i}" placeholder="Carga usada" value="${saved}"><strong>kg</strong><button class="savebtn" data-save="${i}" type="button">Salvar carga</button></div>
-  <div class="saved" data-saved="${i}">${saved!==''?'Salvo no aparelho: '+saved+' kg':'Nenhuma carga salva.'}</div>
-  <details><summary>Histórico de cargas</summary>${hist.length?hist.map(h=>`<div class="history-item">${h.date} · ${h.load} kg</div>`).join(''):'<div class="history-item">Nenhum registro ainda.</div>'}</details>`;
-  $('cards').appendChild(c)
- });
-
- document.querySelectorAll('[data-load]').forEach(inp=>{
-   ['input','change','blur'].forEach(evt=>inp.addEventListener(evt,()=>{
-     const i=+inp.dataset.load,n=setLoad(i,inp.value),msg=document.querySelector(`[data-saved="${i}"]`);
-     if(msg)msg.textContent=n===''?'Nenhuma carga salva.':`Salvo no aparelho: ${n} kg`;
-   }))
- });
- document.querySelectorAll('[data-save]').forEach(btn=>btn.addEventListener('click',()=>{
-   const i=+btn.dataset.save,inp=document.querySelector(`[data-load="${i}"]`),n=setLoad(i,inp.value),msg=document.querySelector(`[data-saved="${i}"]`);
-   if(msg)msg.textContent=n===''?'Nenhuma carga salva.':`Salvo no aparelho: ${n} kg`;
-   btn.textContent='Salvo';setTimeout(()=>btn.textContent='Salvar carga',900)
- }));
- document.querySelectorAll('.set').forEach(b=>b.addEventListener('click',()=>{
-   const i=+b.dataset.i,j=+b.dataset.j,s=done[workout][i]||[false,false,false];s[j]=!s[j];done[workout][i]=s;b.classList.toggle('done',s[j]);b.textContent=s[j]?'Concluída':'Série '+(j+1);
-   if(s[j]){const input=document.querySelector(`[data-load="${i}"]`);setLoad(i,input.value);saveHist(i,input.value);startTimer(90)}updateProgress()
- }));
- updateProgress()
-}
-function updateProgress(){let ex=0,se=0;W[workout].forEach((_,i)=>{const n=(done[workout][i]||[]).filter(Boolean).length;se+=n;if(n===3)ex++});$('exProg').textContent=`${ex} de ${W[workout].length} exercícios`;$('setProg').textContent=`${se} séries`;$('bar').style.width=(ex/W[workout].length*100)+'%'}
-function go(){document.querySelector(`[data-index="${current}"]`)?.scrollIntoView({behavior:'smooth',block:'center'})}
-$('tabA').onclick=()=>{workout='A';current=0;render()};$('tabB').onclick=()=>{workout='B';current=0;render()};$('prev').onclick=()=>{current=Math.max(0,current-1);go()};$('next').onclick=()=>{current=Math.min(W[workout].length-1,current+1);go()};
-$('t60').onclick=()=>startTimer(60);$('t90').onclick=()=>startTimer(90);$('resetTimer').onclick=()=>{stopTimer();remaining=90;formatTime();$('timerMsg').textContent='Cronômetro reiniciado.'};$('pause').onclick=()=>{if(running){clearInterval(timer);timer=null;running=false;$('pause').textContent='Continuar'}else if(remaining>0){startTimer(remaining)}};
-[['sleep','sv'],['energy','ev'],['pain','pv'],['stiff','rv']].forEach(([a,b])=>$(a).addEventListener('input',()=>{$(b).textContent=$(a).value;recovery()}));
-function recovery(){const sl=+$('sleep').value,en=+$('energy').value,pa=+$('pain').value,st=+$('stiff').value;let m='Condição adequada para manter o treino planejado.';if(pa>=4)m='Dor articular elevada: reduza carga/amplitude e não force o movimento doloroso.';else if(sl<=5||en<=5||st>=6)m='Recuperação abaixo do ideal: mantenha as cargas ou reduza o volume hoje.';$('status').textContent=m}
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}
-formatTime();render();recovery();
-</script>
-</body>
-</html>
+const W={A:[["Trap Bar Deadlift","3 × 8"],["Goblet Box Squat","3 × 10–12"],["Mesa Flexora","3 × 12"],["Remada Apoiada","3 × 10"],["Supino Inclinado com Halteres","3 × 10"],["Landmine Press","3 × 10/lado"],["Face Pull","3 × 15"],["Panturrilha Sentado","3 × 15"],["Panturrilha em Pé","3 × 12"],["Pallof Press","3 × 12/lado"],["Prancha","3 × 30–45 s"]],B:[["Step-Up Baixo","3 × 10/perna"],["Passada / Afundo","3 × 10/perna"],["RDL Unilateral","3 × 8/perna"],["Remada Baixa na Polia","3 × 10–12"],["Puxada Alta — Pegada Neutra","3 × 10–12"],["Elevação Lateral — Scaption","3 × 12"],["Rotação Externa","3 × 12/lado"],["Panturrilha Unilateral","3 × 12–15/perna"],["Farmer Walk","3 × 30–40 s"],["Dead Bug","3 × 10/lado"],["Apoio Unilateral","3 × 30 s/perna"]]};
+let db,w=new Date().getDay()==5?'B':'A',sess={done:{},workout:w},timer,remain=90;const $=x=>document.getElementById(x);
+function odb(){return new Promise((r,j)=>{let q=indexedDB.open("MeuTreino",1);q.onupgradeneeded=()=>q.result.createObjectStore("kv");q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>j()})}
+function put(k,v){return new Promise(r=>{let t=db.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=r})}function get(k){return new Promise(r=>{let q=db.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>r(q.result)})}
+function show(v){document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));$(v).classList.add("active");if(v=="history")rh();if(v=="evolution")re()}
+async function render(){ $("wt").textContent="Treino "+w;$("cards").innerHTML="";for(let i=0;i<W[w].length;i++){let e=W[w][i],l=await get("load_"+w+i)||"",s=sess.done[i]||[0,0,0],c=document.createElement("div");c.className="card";c.innerHTML=`<div class="ex">${i+1}. ${e[0]}</div><div class="muted">${e[1]}</div><a class="btn" target="_blank" href="https://www.youtube.com/results?search_query=${encodeURIComponent(e[0]+" exercício execução")}" style="margin:8px 0">Ver demonstração</a><div class="sets">${s.map((x,j)=>`<button data-s="${i},${j}" class="${x?"done":""}">${x?"Concluída":"Série "+(j+1)}</button>`).join("")}</div><div class="load"><input inputmode="decimal" value="${l}" data-l="${i}" placeholder="Carga em kg"><button data-save="${i}">Salvar</button></div><div class="saved">${l?"Última carga: "+l+" kg":"Sem carga registrada"}</div>`;$("cards").appendChild(c)}
+document.querySelectorAll("[data-save]").forEach(b=>b.onclick=async()=>{let i=+b.dataset.save,v=document.querySelector(`[data-l="${i}"]`).value.replace(",",".");await put("load_"+w+i,v);let h=await get("loads")||[];h.unshift({d:Date.now(),w,i,n:W[w][i][0],l:v});await put("loads",h);b.textContent="Salvo";setTimeout(()=>render(),500)});
+document.querySelectorAll("[data-s]").forEach(b=>b.onclick=async()=>{let [i,j]=b.dataset.s.split(",").map(Number),s=sess.done[i]||[0,0,0];s[j]=!s[j];sess.done[i]=s;sess.workout=w;await put("session",sess);startTimer(90);render()});up()}
+function up(){let n=Object.values(sess.done).flat().filter(Boolean).length,total=W[w].length*3;$("prog").textContent=`${n} de ${total} séries concluídas`;$("bar").style.width=n/total*100+"%"}
+function startTimer(x){clearInterval(timer);remain=x;tick();timer=setInterval(()=>{remain--;tick();if(remain<=0)clearInterval(timer)},1000)}function tick(){$("clock").textContent=String(Math.floor(remain/60)).padStart(2,"0")+":"+String(remain%60).padStart(2,"0")}
+async function rh(){let h=await get("sessions")||[];$("hist").innerHTML=h.length?h.map(x=>`<div class="hist"><b>Treino ${x.w}</b> · ${new Date(x.d).toLocaleDateString("pt-BR")}<br><span class="muted">${x.sets} séries</span></div>`).join(""):"Nenhum treino concluído."}
+async function re(){let h=await get("loads")||[],a={};h.forEach(x=>{let k=x.w+x.i;if(!a[k])a[k]=x});$("evo").innerHTML=Object.values(a).map(x=>`<div class="card"><b>${x.n}</b><div style="font-size:25px;font-weight:900">${x.l} kg</div><div class="muted">Treino ${x.w} · ${new Date(x.d).toLocaleDateString("pt-BR")}</div></div>`).join("")||'<div class="card">Ainda sem cargas registradas.</div>'}
+async function init(){await odb();$("date").textContent=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"});let old=await get("session");if(old){sess=old;w=old.workout}$("suggest").textContent="Treino "+w;$("desc").textContent=w=="A"?"Força + estabilidade":"Unilateral + controle";await render();$("start").onclick=()=>show("workout");$("swap").onclick=async()=>{w=w=="A"?"B":"A";sess={done:{},workout:w};await put("session",sess);$("suggest").textContent="Treino "+w;render()};$("finish").onclick=async()=>{let h=await get("sessions")||[],sets=Object.values(sess.done).flat().filter(Boolean).length;h.unshift({d:Date.now(),w,sets});await put("sessions",h);await put("session",null);sess={done:{},workout:w};render();show("history")};document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>show(b.dataset.v));[["sleep","sv"],["energy","ev"],["pain","pv"],["stiff","rv"]].forEach(([a,b])=>$(a).oninput=()=>{$(b).textContent=$(a).value;let p=+$("pain").value,sl=+$("sleep").value,en=+$("energy").value,st=+$("stiff").value;$("advice").textContent=p>=4?"Dor elevada: reduza carga/amplitude e não force o movimento doloroso.":sl<=5||en<=5||st>=6?"Recuperação abaixo do ideal: mantenha cargas ou reduza volume.":"Condição adequada para o treino planejado."})}
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js"));init();
+</script></body></html>
